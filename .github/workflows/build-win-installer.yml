@@ -1,0 +1,89 @@
+name: Build Windows Installer
+
+# 云打包(无需本地 Windows 机器):
+#   1. 把本地改动提交并推送到你自己的 GitHub 仓库(需要先把 sp.spec 强制加入 git:
+#      git add -f sp.spec build_win.bat;  installer.iss 与 workflow 正常提交)
+#   2. Actions 页 -> 手动运行 "Build Windows Installer" (可选 full 模式)
+#      或推送 v* 标签自动构建并附加到 Release
+"on":
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: '打包模式: light=轻量(默认) / full=完整本地模型依赖'
+        required: true
+        default: 'light'
+        type: choice
+        options:
+          - light
+          - full
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 120
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 uv + Python 3.10
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.10'
+
+      - name: 安装依赖
+        run: uv sync --no-dev
+
+      - name: 下载 ffmpeg
+        run: |
+          if (!(Test-Path "ffmpeg\ffmpeg.exe")) {
+            .venv\Scripts\python.exe videotrans\task\update_ffmpeg.py
+          }
+
+      - name: PyInstaller 打包 (onedir)
+        shell: bash
+        env:
+          BUILD_FULL: ${{ github.event.inputs.mode == 'full' && '1' || '0' }}
+        run: |
+          .venv/Scripts/python.exe -m PyInstaller --noconfirm --clean sp.spec
+
+      - name: 组装运行时目录到 dist/sp
+        shell: bash
+        run: |
+          PKG="dist/sp"
+          mkdir -p "$PKG/videotrans"
+          for d in styles prompts voicejson language; do
+            [ -d "videotrans/$d" ] && cp -r "videotrans/$d" "$PKG/videotrans/"
+          done
+          mkdir -p "$PKG/videotrans/codes"
+          [ -f "videotrans/codes/model.py" ] && cp "videotrans/codes/model.py" "$PKG/videotrans/codes/"
+          for f in cfg.json codec.json params.json ass.json glossary.txt newlang.txt; do
+            [ -f "videotrans/$f" ] && cp "videotrans/$f" "$PKG/videotrans/"
+          done
+          [ -d ffmpeg ] && cp -r ffmpeg "$PKG/"
+          mkdir -p "$PKG/f5-tts"
+          cp -n f5-tts/*.wav "$PKG/f5-tts/" 2>/dev/null || true
+
+      - name: 安装 Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: 生成安装包
+        shell: bash
+        run: |
+          APPVER=$(grep -oE 'VERSION = "[^"]*"' videotrans/__init__.py | sed 's/VERSION = "//;s/"//')
+          echo "版本: $APPVER"
+          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" installer.iss /DMyAppVersion=$APPVER
+
+      - name: 上传安装包 (artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: VideoTransAI-installer
+          path: installer\*.exe
+          retention-days: 14
+
+      - name: 附加到 Release (仅 tag 触发)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: installer\*.exe
