@@ -40,10 +40,10 @@ _asset = next(
     None,
 )
 if not _asset:
-    raise SystemExit(f"BtbN 最新版本 {latest_version} 未找到 win64-gpl 压缩包资产")
+    raise SystemExit(f"No win64-gpl zip asset found in release {latest_version}")
 download_url = _asset["browser_download_url"]
 _extract_dir = _asset["name"].replace(".zip", "")
-print(f"ffmpeg 下载地址: {download_url}")
+print(f"ffmpeg download url: {download_url}")
 
 # Destination path for the download
 zip_path = os.path.join(dest_dir, "ffmpeg.zip")
