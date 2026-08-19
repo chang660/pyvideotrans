@@ -29,7 +29,21 @@ api_url = "https://api.github.com/repos/BtbN/FFmpeg-Builds/releases/latest"
 response = requests.get(api_url)
 latest_release = response.json()
 latest_version = latest_release["tag_name"]
-download_url = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.0-latest-win64-gpl-7.0.zip"
+
+# 从 API 资产列表中动态解析 win64-gpl 完整包(而非硬编码旧版本号, 避免 404)
+_assets = latest_release.get("assets") or []
+_asset = next(
+    (a for a in _assets
+     if a.get("name", "").endswith(".zip")
+     and "-win64-gpl-" in a["name"]
+     and "shared" not in a["name"]),
+    None,
+)
+if not _asset:
+    raise SystemExit(f"BtbN 最新版本 {latest_version} 未找到 win64-gpl 压缩包资产")
+download_url = _asset["browser_download_url"]
+_extract_dir = _asset["name"].replace(".zip", "")
+print(f"ffmpeg 下载地址: {download_url}")
 
 # Destination path for the download
 zip_path = os.path.join(dest_dir, "ffmpeg.zip")
@@ -49,10 +63,10 @@ with zipfile.ZipFile(zip_path, "r") as zip_ref:
 
 # Paths to the binaries within the extracted zip file
 ffmpeg_exe = os.path.join(
-    temp_dir, "ffmpeg-n7.0-latest-win64-gpl-7.0", "bin", "ffmpeg.exe"
+    temp_dir, _extract_dir, "bin", "ffmpeg.exe"
 )
 ffprobe_exe = os.path.join(
-    temp_dir, "ffmpeg-n7.0-latest-win64-gpl-7.0", "bin", "ffprobe.exe"
+    temp_dir, _extract_dir, "bin", "ffprobe.exe"
 )
 
 # Checks if the files already exist and removes them if necessary
