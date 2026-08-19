@@ -1,8 +1,10 @@
 # 原理解释见 @docs/Synchronize.md
 import os
 import shutil
+import sys
 import time
 from pathlib import Path
+import multiprocessing
 
 # 引入 soundfile 和 audio 处理
 import soundfile as sf
@@ -471,7 +473,8 @@ class SpeedRate:
         
         _wok=min(12, len(self.audio_data), max(os.cpu_count()-1,1) )
         logger.debug(f'使用{_wok}个进程处理音频加速')
-        with ProcessPoolExecutor(max_workers=int(_wok)) as pool:
+        _mp_ctx = multiprocessing.get_context('fork' if sys.platform != 'win32' else 'spawn')
+        with ProcessPoolExecutor(max_workers=int(_wok), mp_context=_mp_ctx) as pool:
             for i, d in enumerate(self.audio_data):
                 all_task.append(pool.submit(_change_speed_rubberband if HAS_RUBBERBAND and self.audio_speed_rubberband else _precise_speed_up_audio,d['filename'], d['target_time'] ))
         
@@ -505,7 +508,8 @@ class SpeedRate:
         logger.debug(f"[Video] 提交 {len(data)} 个视频片段处理慢速任务，原视频片段为 {len(self.video_for_clips)} 个")
         _wok=min(12, len(data), max(os.cpu_count()-1,1) )
         logger.debug(f'使用{_wok}个进程处理视频慢速')
-        with ProcessPoolExecutor(max_workers=int(_wok)) as pool:
+        _mp_ctx = multiprocessing.get_context('fork' if sys.platform != 'win32' else 'spawn')
+        with ProcessPoolExecutor(max_workers=int(_wok), mp_context=_mp_ctx) as pool:
             for i, d in enumerate(data):
                 all_task.append(pool.submit(_cut_video_get_duration,i, d, self.novoice_mp4_original, self.preset, self.crf,self.fps_mode  ))
           

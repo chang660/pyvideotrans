@@ -1,5 +1,5 @@
 """
-pyVideoTrans CLI — command-line interface for video translation, dubbing, and transcription.
+VideoTrans AI CLI — command-line interface for video translation, dubbing, and transcription.
 
 Usage examples:
   # Speech to text
@@ -45,8 +45,8 @@ TEXT_DB: Dict[str, Dict[str, str]] = {
 
     # --- Argparse descriptions ---
     "cli_desc": {
-        "zh": "pyVideoTrans 命令行模式\n文档: https://pyvideotrans.com/cli",
-        "en": "pyVideoTrans CLI Mode\nDocs: https://pyvideotrans.com/cli"
+        "zh": "VideoTrans AI 命令行模式\n文档: https://pyvideotrans.com/cli",
+        "en": "VideoTrans AI CLI Mode\nDocs: https://pyvideotrans.com/cli"
     },
     "cli_epilog": {
         "zh": "示例:\n"

@@ -66,7 +66,7 @@ class StartWindow(QWidget):
         self.LoadNotif = None
         self.start_time = time.time()
         self.loader = None
-        self.setWindowTitle('pyVideoTrans')
+        self.setWindowTitle('VideoTrans AI')
         self.screen=None
 
         self.resize(560, 350)
@@ -82,7 +82,7 @@ class StartWindow(QWidget):
         # 背景上叠加文字
         v_layout = QVBoxLayout(self)
         v_layout.addStretch(1)
-        self.status_label = QLabel(f"pyVideoTrans {VERSION} Loading...")
+        self.status_label = QLabel(f"VideoTrans AI {VERSION} Loading...")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.status_label.setStyleSheet("font-size:16px; color:white; background-color:transparent;")
 

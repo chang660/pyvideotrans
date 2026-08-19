@@ -334,7 +334,9 @@ torchaudio = [
 #  https://github.com/billwuhao/pynini-windows-wheels/releases/download/v2.1.6.post1/pynini-2.1.6.post1-cp310-cp310-win_amd64.whl
 
 pynini = [
-    { url = "https://github.com/billwuhao/pynini-windows-wheels/releases/download/v2.1.6.post1/pynini-2.1.6.post1-cp310-cp310-win_amd64.whl", marker = "sys_platform == 'win32'" }
+    { url = "https://github.com/billwuhao/pynini-windows-wheels/releases/download/v2.1.6.post1/pynini-2.1.6.post1-cp310-cp310-win_amd64.whl", marker = "sys_platform == 'win32'" },
+    # macOS: 2.1.6 与 Homebrew openfst 1.8.4 不兼容 (fst::StringJoin API 变更), 使用本地编译的 2.1.7 wheel
+    { path = "local-wheels/pynini-2.1.7-cp310-cp310-macosx_11_0_arm64.whl", marker = "sys_platform == 'darwin'" }
 ]
 
 

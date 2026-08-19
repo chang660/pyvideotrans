@@ -44,33 +44,45 @@ def faster_whisper(
     if detect_language == 'fil':
         detect_language = 'tl'
 
-    def _create_model(_compute_type):
+    def _create_model(_compute_type, _device=None, _tried=None):
+        # 记录已尝试过的(设备,数据类型)组合，防止 cuda/cpu 间来回降级导致无限递归
+        _device = _device or ('cuda' if is_cuda else 'cpu')
+        _tried = _tried or []
+        _key = f'{_device}:{_compute_type}'
+        if _key in _tried:
+            raise RuntimeError(f'faster-whisper 加载模型失败，已尝试以下组合仍不可用: {_tried}')
+        _tried.append(_key)
         try:
-            logger.debug(f'[faster_whisper]加载模型{model_name}: {is_cuda=},{_compute_type=}')
+            logger.debug(f'[faster_whisper]加载模型{model_name}: {is_cuda=},{_device=},{_compute_type=}')
             model = WhisperModel(
                 local_dir,
-                device="cuda" if is_cuda else 'cpu',
-                device_index=device_index if is_cuda else 0,
+                device=_device,
+                device_index=device_index if _device == 'cuda' else 0,
                 compute_type=_compute_type
             )
             return model
         except Exception as e:
-            # 对数据类型问题引发的错误重试
-            # cuda下先尝试使用 float16
-            if is_cuda and _compute_type != 'float16':
-                logger.warning(f'faster-whisper CUDA下 加载模型失败，更改为 [float16] 类型后重试{e}')
-                return _create_model('float16')
-
-
-            # 如果cpu并且非 int8,先尝试 int8
-            if not is_cuda and _compute_type != 'int8':
-                logger.warning(f'faster-whisper CPU下 加载模型失败，更改为 [int8] 类型后重试{e}')
-                return _create_model('int8')
-            # 保底 float32
-            if _compute_type != 'float32':
-                logger.warning(f'faster-whisper  加载模型失败，更改为 [float32] 类型后重试, {is_cuda=}')
-                return _create_model('float32')
-            raise
+            # 按线性顺序降级，用 == 显式判断当前类型推导下一步：
+            #   cuda: 默认类型 -> float16 -> float32 -> 回退 cpu
+            #   cpu:  默认类型 -> int8 -> float32
+            # 每个(设备,数据类型)组合最多尝试一次，_tried 保证不会死循环
+            if _device == 'cuda':
+                if _compute_type == 'float16':
+                    _next, _next_device, _msg = 'float32', 'cuda', 'faster-whisper CUDA float16 仍失败，更改为 [float32] 类型后重试'
+                elif _compute_type == 'float32':
+                    # CUDA 下所有数据类型均失败(如未编译CUDA支持)，回退到 CPU 重试
+                    _next, _next_device, _msg = 'int8', 'cpu', 'faster-whisper CUDA 加载模型失败，回退到 CPU 后重试'
+                else:
+                    _next, _next_device, _msg = 'float16', 'cuda', 'faster-whisper CUDA下 加载模型失败，更改为 [float16] 类型后重试'
+            else:
+                if _compute_type == 'int8':
+                    _next, _next_device, _msg = 'float32', 'cpu', 'faster-whisper CPU int8 仍失败，更改为 [float32] 类型后重试'
+                elif _compute_type == 'float32':
+                    raise
+                else:
+                    _next, _next_device, _msg = 'int8', 'cpu', 'faster-whisper CPU下 加载模型失败，更改为 [int8] 类型后重试'
+            logger.warning(f'{_msg}{e}')
+            return _create_model(_next, _next_device, _tried)
 
     try:
         if speech_timestamps and isinstance(speech_timestamps, str):

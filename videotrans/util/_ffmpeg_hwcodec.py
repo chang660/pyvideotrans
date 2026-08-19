@@ -16,7 +16,11 @@ def check_hw_on_start(force=False):
 
 
 def get_video_codec(compat=None,force=False) -> str:
-    import torch
+    # torch 可能未安装(轻量打包版): 无 torch 时跳过 CUDA 检测, 不影响软件编码
+    try:
+        import torch
+    except ImportError:
+        torch = None
     _codec_cache = app_cfg.codec_cache
     try:
         if not _codec_cache and Path(f'{ROOT_DIR}/videotrans/codec.json').exists():
@@ -109,12 +113,9 @@ def get_video_codec(compat=None,force=False) -> str:
         try:
             for encoder_suffix in encoders_to_test:
                 if encoder_suffix == 'nvenc':
-                    try:
-                        if not torch.cuda.is_available():
-                            logger.debug("CUDA 不可用，跳过 nvenc 测试。")
-                            continue
-                    except ImportError:
-                        logger.error("未找到 torch 模块，将直接尝试 nvenc 测试。")
+                    if torch is None or not torch.cuda.is_available():
+                        logger.debug("CUDA 不可用(torch 缺失或未检测到 GPU)，跳过 nvenc 测试。")
+                        continue
 
                 full_encoder_name = f"{h_prefix}_{encoder_suffix}"
                 if test_encoder_internal(full_encoder_name):

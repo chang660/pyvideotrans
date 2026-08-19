@@ -45,6 +45,9 @@ _no_proxy_list = [
     "api.gradio.app", ".api.gradio.app",
     # "microsoft.com", ".microsoft.com", # 涵盖 tts.speech.microsoft.com
 
+    # --- Edge-TTS (免费配音, 直连通常比走代理稳定) ---
+    "speech.platform.bing.com", ".speech.platform.bing.com",
+
     # --- 本地回环 (涵盖所有端口：7860, 8000, 9880, 5051等) ---
     "localhost",
     "127.0.0.1",

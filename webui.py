@@ -1,5 +1,5 @@
 """
-pyVideoTrans WebUI — Gradio-based web interface for video translation.
+VideoTrans AI WebUI — Gradio-based web interface for video translation.
 
 Usage:
     uv run webui.py
@@ -578,7 +578,7 @@ def build_channel_settings():
         categories[cat].append((name, cfg))
 
     gr.Markdown("### 渠道设置")
-    gr.Markdown("配置各渠道的 API 地址、SK 密钥等信息。**保存后与桌面版 (sp.exe) 通用**，配置文件存储在 `videotrans/params.json` 中。")
+    gr.Markdown("配置各渠道的 API 地址、SK 密钥等信息，配置文件存储在 `videotrans/params.json` 中。")
 
     with gr.Tabs():
         for cat_name, channels in categories.items():
@@ -761,7 +761,7 @@ ADVANCED_SECTION_TITLES = {
 
 def build_advanced_settings():
     import gradio as gr
-    gr.Markdown("配置全局高级参数。**保存后与桌面版 (sp.exe) 通用**，配置文件存储在 `videotrans/cfg.json` 中。\n⚠️ 部分参数修改后需要**重启软件**才能生效。")
+    gr.Markdown("配置全局高级参数，配置文件存储在 `videotrans/cfg.json` 中。\n⚠️ 部分参数修改后需要**重启软件**才能生效。")
 
     # ---- 通用设置 ----
     with gr.Accordion("📋 通用设置", open=True):
@@ -908,14 +908,9 @@ def build_advanced_settings():
 def build_ui():
     import gradio as gr
 
-    with gr.Blocks(title="pyVideoTrans WebUI") as app:
+    with gr.Blocks(title="VideoTrans AI WebUI") as app:
         gr.Markdown("""
-# pyVideoTrans 视频翻译 WebUI
-> [该界面仅实现部分功能，完整功能请使用桌面软件版(sp.exe 或 sp.py)](https://pyvideotrans.com)
->
->  [使用文档](https://pyvideotrans.com) |
->  [开源地址](https://github.com/jianchang512/pyvideotrans) |
->  [遇到问题](https://bbs.pyvideotrans.com)
+# VideoTrans AI 视频翻译 WebUI
 ----
         """)
 
@@ -1225,7 +1220,7 @@ if __name__ == "__main__":
     try:
         import argparse
         import gradio as gr
-        parser = argparse.ArgumentParser(description="pyVideoTrans WebUI")
+        parser = argparse.ArgumentParser(description="VideoTrans AI WebUI")
         parser.add_argument("--host", type=str, default="0.0.0.0", help="Host address")
         parser.add_argument("--port", type=int, default=7860, help="Port number")
         parser.add_argument("--share", action="store_true", help="Create a public Gradio link")

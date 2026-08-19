@@ -228,6 +228,10 @@ class BaseCon:
                 import torch
                 if not torch.cuda.is_available():
                     is_cuda = False
+                    # 同步修正传给子进程的参数，否则子进程仍会以 cuda 模式加载模型而报错
+                    if 'is_cuda' in kwargs:
+                        kwargs['is_cuda'] = False
+                    logger.warning(f'已启用CUDA但未检测到可用GPU，强制使用CPU')
 
             # 如果使用gpu，则获取可用 device_index
             if is_cuda:

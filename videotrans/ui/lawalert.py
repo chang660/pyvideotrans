@@ -56,10 +56,10 @@ class Ui_lawalert(QtWidgets.QWidget):
 </head>
 <body>
 
-<h1>pyVideoTrans 软件许可与服务协议</h1>
+<h1>VideoTrans AI 软件许可与服务协议</h1>
 <p>更新日期：2025年10月21日</p>
 
-<p>欢迎使用 pyVideoTrans（以下简称“本软件”）！本软件是一款免费、开源的本地视频翻译和语音转录工具。在安装、复制或以任何方式使用本软件前，请您务必仔细阅读并充分理解本协议中的所有条款。</p>
+<p>欢迎使用 VideoTrans AI（以下简称“本软件”）！本软件是一款免费、开源的本地视频翻译和语音转录工具。在安装、复制或以任何方式使用本软件前，请您务必仔细阅读并充分理解本协议中的所有条款。</p>
 
 <p class="warning"><strong>您的安装、复制、下载或任何形式的使用行为，即表示您已阅读、理解并无条件接受本协议所有条款的约束。如果您不同意本协议的任何内容，请立即停止使用并从您的设备中彻底删除本软件。</strong></p>
 
@@ -136,7 +136,7 @@ class Ui_lawalert(QtWidgets.QWidget):
         btn_h.addWidget(dont)
         self.v1.addLayout(btn_h)
 
-        lawalert.setWindowTitle('pyVideoTrans '+tr('Software License Agreement'))
+        lawalert.setWindowTitle('VideoTrans AI '+tr('Software License Agreement'))
 
     def _close(self,res=True):
         if res:
