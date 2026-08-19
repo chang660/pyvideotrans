@@ -16,16 +16,16 @@
    git add -f sp.spec build_win.bat
    git add installer.iss .github/workflows/build-win-installer.yml
    git commit -m "add windows build kit"
-   git push origin main
+   git push -u fork dev     # 本机工作分支是 dev; 建议把 fork 默认分支设为 dev
    ```
 
 2. 到仓库 Actions 页面 → **Build Windows Installer** → `Run workflow`
-   (模式选 `light` 轻量或 `full` 完整)。
+   (模式选 `light` 轻量或 `full` 完整, ref 选 dev)。
 
 3. 构建约 10~30 分钟, 完成后在 workflow 运行页下载 `VideoTransAI-installer`
    artifact, 里面就是 `VideoTransAI-4.09-setup.exe`。
 
-4. (可选) 推送 `v*` 标签(如 `git tag v4.09-win && git push --tags`)会自动构建
+4. (可选) 推送 `v*` 标签(如 `git tag v4.09-win && git push fork v4.09-win`)会自动构建
    并把安装包附加到 Release 页面。
 
 ## 方案 B: Windows 本机打包
